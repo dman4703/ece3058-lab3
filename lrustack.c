@@ -50,6 +50,11 @@ lru_stack_t* init_lru_stack(int size) {
     //    stack -> array[i] = ?;
     //}
 
+    stack->array = (int*)malloc(size * sizeof(int));
+    for (int i = 0; i < size; i++) {
+        stack->array[i] = i;
+    }
+
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
@@ -72,7 +77,7 @@ int lru_stack_get_lru(lru_stack_t* stack) {
     
     // hint: instead of returning 0, return the first element of the array
     // return (stack -> array[?]);
-    return 0;
+    return stack->array[0];
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
@@ -90,6 +95,25 @@ void lru_stack_set_mru(lru_stack_t* stack, int n) {
     //  TODO: Write code to set the passed in block index  as the MRU 
     //  element in the LRU Stack. 
     ////////////////////////////////////////////////////////////////////
+
+    // locate entry in array
+    int pos = -1;
+    for (int i = 0; i < (stack->size); i++) {
+        if (stack->array[i] == n) {
+            pos = i;
+            break;
+        }
+    }
+    if (pos == -1) {
+        return; // Invalid index; nothing to do
+    }
+
+    // shift elements
+    for (int i = pos; i < ((stack->size) - 1); i++) {
+        stack->array[i] = stack->array[i + 1];
+    }
+    // move to end of array
+    stack->array[(stack->size) - 1] = n;
 
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
@@ -109,7 +133,7 @@ void lru_stack_cleanup(lru_stack_t* stack) {
 
     // hint: first free your array
     // free(stack -> ?);
-
+    free(stack->array);
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
