@@ -31,8 +31,15 @@
  * @return the dynamically allocated stack. 
  */
 lru_stack_t* init_lru_stack(int size) {
+
+    if (size <= 0) {
+        return NULL;
+    }
     //  Use malloc to dynamically allocate a lru_stack_t
 	lru_stack_t* stack = (lru_stack_t*) malloc(sizeof(lru_stack_t));
+    if (!stack) {
+        return NULL;
+    }
     //  Set the stack size the caller passed in
 	stack->size = size;
     
@@ -51,6 +58,10 @@ lru_stack_t* init_lru_stack(int size) {
     //}
 
     stack->array = (int*)malloc(size * sizeof(int));
+    if (!stack->array) {
+        free(stack);
+        return NULL;
+    }
     for (int i = 0; i < size; i++) {
         stack->array[i] = i;
     }
@@ -77,7 +88,18 @@ int lru_stack_get_lru(lru_stack_t* stack) {
     
     // hint: instead of returning 0, return the first element of the array
     // return (stack -> array[?]);
+    if (!stack) {
+        return -1;
+    }
+    if (!stack->array) {
+        return -1;
+    }
+    if ((stack->size) <= 0) {
+        return -1;
+    }
+
     return stack->array[0];
+
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
@@ -95,6 +117,16 @@ void lru_stack_set_mru(lru_stack_t* stack, int n) {
     //  TODO: Write code to set the passed in block index  as the MRU 
     //  element in the LRU Stack. 
     ////////////////////////////////////////////////////////////////////
+    
+    if (!stack) {
+        return;
+    }
+    if (n < 0) {
+        return;
+    }
+    if (n >= (stack->size)) {
+        return;
+    }
 
     // locate entry in array
     int pos = -1;
@@ -105,7 +137,7 @@ void lru_stack_set_mru(lru_stack_t* stack, int n) {
         }
     }
     if (pos == -1) {
-        return; // Invalid index; nothing to do
+        return; // Invalid index
     }
 
     // shift elements
