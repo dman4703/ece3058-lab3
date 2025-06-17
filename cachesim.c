@@ -68,10 +68,33 @@ void cachesim_init(int _block_size, int _cache_size, int _ways) {
     // point "blocks" to a bunch of cache_block_t's (dynamically allocate with calloc, cache[i].blocks = (cast-type*)calloc(n, sizeof(cache_block_t));)
     // for each cache_block_t, initialize dirty, valid, tag bits (Cache[i].blocks[j].dirty=?, Cache[i].blocks[j].tag=?, Cache[i].blocks[j].valid=?)
     
+    // Calculate var values
+    num_sets = cache_size / (block_size * ways);
+    num_offset_bits = simple_log_2(block_size);
+    num_index_bits = simple_log_2(num_sets);
+
+    // Allocate cache sets
+    cache = (cache_set_t*)malloc(num_sets * sizeof(cache_set_t));
+    if (!cache) {
+        return;
+    } // if
+    // initialize each set
+    for (int i = 0; i < num_sets; i++) {
+        cache[i].size = ways;
+        cache[i].stack = init_lru_stack(ways);
+        cache[i].blocks = (cache_block_t*)calloc(ways, sizeof(cache_block_t));
+        // Initialize tags, valid, dirty
+        for (int j = 0; j < ways; j++) {
+            cache[i].blocks[j].tag = 0;
+            cache[i].blocks[j].valid = 0;
+            cache[i].blocks[j].dirty = 0;
+        } // for
+    } // for
+
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
-}
+} // cachesim_init
 
 /**
  * Function to perform a SINGLE memory access to your cache. In this function, 
@@ -98,10 +121,53 @@ void cachesim_access(addr_t physical_addr, int access_type) {
     // 1. extract offset, tag, and index from address: use addr_t for address, offset, tag, index; utilize bitwie shift and bit-masks
     // 2. search in cache, check hit or miss
     
+    // Increment accesses counter for every memory access
+    accesses++;
+    
+    addr_t tag = physical_addr >> (num_offset_bits + num_index_bits);
+    addr_t index = (physical_addr >> num_offset_bits) & ((1ULL << num_index_bits) - 1);
+    cache_set_t* set = &cache[index];
+
+    // Check for hit
+    for (int i = 0; i < ways; i++) {
+        if (set->blocks[i].valid && (set->blocks[i].tag == (int)tag)) {
+            hits++;
+            if (access_type == MEMWRITE) {
+                set->blocks[i].dirty = 1;
+            }    // if
+            lru_stack_set_mru(set->stack, i);
+            return;
+        } // for
+    } // for
+
+    // if no hit, there is a Miss
+    misses++;
+    // search for invalid block
+    for (int i = 0; i < ways; i++) {
+        if (!set->blocks[i].valid) {
+            set->blocks[i].valid = 1;
+            set->blocks[i].tag = (int)tag;
+            set->blocks[i].dirty = (access_type == MEMWRITE) ? 1 : 0;
+            lru_stack_set_mru(set->stack, i);
+            return;
+        } // if
+    } // for
+
+    // evict LRU block
+    int evictIdx = lru_stack_get_lru(set->stack);
+    if (set->blocks[evictIdx].dirty) {
+        writebacks++;
+    } // if
+
+    set->blocks[evictIdx].tag = (int)tag;
+    set->blocks[evictIdx].valid = 1;
+    set->blocks[evictIdx].dirty = (access_type == MEMWRITE) ? 1 : 0;
+    lru_stack_set_mru(set->stack, evictIdx);
+
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
-}
+} // cachesim_access
 
 /**
  * Function to free up any dynamically allocated memory you allocated
@@ -114,11 +180,20 @@ void cachesim_cleanup() {
     // stack --> lru_stack_cleanup
     // cache.blocks
     // cache
-
+    if (!cache) {
+        return;
+    } // if
+    for (int i = 0; i < num_sets; i++) {
+        if (cache[i].stack) {
+            lru_stack_cleanup(cache[i].stack);
+        } // if
+        free(cache[i].blocks);
+    } // for
+    free(cache);
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
-}
+} // cachesim_cleanup
 
 /**
  * Function to print cache statistics

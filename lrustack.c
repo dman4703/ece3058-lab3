@@ -34,12 +34,12 @@ lru_stack_t* init_lru_stack(int size) {
 
     if (size <= 0) {
         return NULL;
-    }
+    } // if
     //  Use malloc to dynamically allocate a lru_stack_t
 	lru_stack_t* stack = (lru_stack_t*) malloc(sizeof(lru_stack_t));
     if (!stack) {
         return NULL;
-    }
+    } // if
     //  Set the stack size the caller passed in
 	stack->size = size;
     
@@ -61,17 +61,17 @@ lru_stack_t* init_lru_stack(int size) {
     if (!stack->array) {
         free(stack);
         return NULL;
-    }
+    } // if
     for (int i = 0; i < size; i++) {
         stack->array[i] = i;
-    }
+    } // for
 
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
 
 	return stack;
-}
+} // init_lru_stack
 
 /**
  * Function to get the index of the least recently used cache block, as indicated by <stack>.
@@ -90,20 +90,20 @@ int lru_stack_get_lru(lru_stack_t* stack) {
     // return (stack -> array[?]);
     if (!stack) {
         return -1;
-    }
+    } // if
     if (!stack->array) {
         return -1;
-    }
+    } // if
     if ((stack->size) <= 0) {
         return -1;
-    }
+    } // if
 
     return stack->array[0];
 
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
-}
+} // lru_stack_get_lru
 
 /**
  * Function to mark the cache block with index <n> as MRU in <stack>. This operation should
@@ -120,13 +120,13 @@ void lru_stack_set_mru(lru_stack_t* stack, int n) {
     
     if (!stack) {
         return;
-    }
+    } // if
     if (n < 0) {
         return;
-    }
+    } // if
     if (n >= (stack->size)) {
         return;
-    }
+    } // if
 
     // locate entry in array
     int pos = -1;
@@ -134,23 +134,23 @@ void lru_stack_set_mru(lru_stack_t* stack, int n) {
         if (stack->array[i] == n) {
             pos = i;
             break;
-        }
-    }
+        } // if
+    } // for
     if (pos == -1) {
         return; // Invalid index
-    }
+    } // if
 
     // shift elements
     for (int i = pos; i < ((stack->size) - 1); i++) {
         stack->array[i] = stack->array[i + 1];
-    }
+    } // for
     // move to end of array
     stack->array[(stack->size) - 1] = n;
 
     ////////////////////////////////////////////////////////////////////
     //  End of your code   
     ////////////////////////////////////////////////////////////////////
-}
+} // lru_stack_set_mru
 
 /**
  * Function to free up any memory you dynamically allocated for <stack>
@@ -171,4 +171,4 @@ void lru_stack_cleanup(lru_stack_t* stack) {
     ////////////////////////////////////////////////////////////////////
 
     free(stack);        // Free the stack struct we malloc'd
-}
+} // lru_stack_cleanup
