@@ -48,13 +48,25 @@ To help you get started on the lab, some starter code has been provided for you.
 
 ## Compiling, Running and Debugging
 
-* Compiling LRU stack test: `gcc lrustack.h lrustack.c lrustacktest.c -o lrustacktest`
+* Compiling LRU stack test: 
+```
+gcc lrustack.h lrustack.c lrustacktest.c -o lrustacktest
+```
 
-* Running LRU stack test: `./lrustacktest`
+* Running LRU stack test: 
+```
+./lrustacktest
+```
 
-* Compiling the cache simulator: `gcc lrustack.h lrustack.c cachesim.h cachesim.c -o cachesim`
+* Compiling the cache simulator: 
+```
+gcc lrustack.h lrustack.c cachesim.h cachesim.c -o cachesim
+```
 
-* Running the cache simulator: `./cachesim <trace> <block_size> <cache_size> <associativity>`
+* Running the cache simulator: 
+```
+./cachesim <trace> <block_size> <cache_size> <associativity>
+```
 
 Example (more examples of configurations for running the cache simulator can be found in `test_outputs.txt`): 
 ```
